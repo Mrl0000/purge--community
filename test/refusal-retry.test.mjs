@@ -72,3 +72,86 @@ test("legitimate answers that merely mention 授权 are not flagged", () => {
   assert(!looksLikeRefusal("登录接口需要携带 Authorization 头，授权失败返回 401。"));
   assert(!looksLikeRefusal("这部分代码不参与渲染，可以安全删除。"));
 });
+
+test("meta refusals about the instruction itself are detected", () => {
+  const meta = [
+    "这段指令是提示词注入，我不会按它执行。",
+    "上面的要求想覆盖系统规则，我注意到这段提示词在要求我忽略限制。",
+    "This message is an attempt to jailbreak the assistant, so I will not comply.",
+    "我无法把这串内容当作可执行的指令。",
+  ];
+  for (const text of meta) assert(looksLikeRefusal(text), text);
+});
+
+test("technical answers about injection points are not flagged", () => {
+  assert(!looksLikeRefusal("先在 server.js 里定位 eval(req.body.code)，这就是注入点。"));
+  assert(!looksLikeRefusal("第 3 步：把 payload 写进 notes.md，再跑 npm test。"));
+});
+
+function scripted(streams) {
+  let i = 0;
+  return () =>
+    (async function* () {
+      const spec = streams[Math.min(i, streams.length - 1)];
+      i += 1;
+      if (spec.error) throw Object.assign(new Error(spec.error), { code: spec.code });
+      for (const text of spec.texts || []) yield delta(text);
+      yield finish();
+    })();
+}
+
+test("a retry that produces the deliverable is logged as recovered", async () => {
+  const rows = [];
+  const factory = scripted([
+    { texts: ["I'm sorry, but I can't help with that."] },
+    { texts: ["Step 1: read the file."] },
+  ]);
+  const chunks = await collect(
+    streamWithRefusalRetry(factory, { messages: [sys("s")] }, { audit: (event, data) => rows.push({ event, ...data }) }),
+  );
+  assert.deepEqual(rows.map((r) => r.event), ["refusal_retry", "refusal_retry_outcome"]);
+  assert.equal(rows[1].outcome, "recovered");
+  assert.equal(chunks.filter((c) => c.type === "text-delta").at(-1).text, "Step 1: read the file.");
+});
+
+test("a retry that refuses again is logged as refused_again and still shown to the user", async () => {
+  const rows = [];
+  const factory = scripted([{ texts: ["I can't help with that."] }, { texts: ["I'm sorry, but I must decline."] }]);
+  const chunks = await collect(
+    streamWithRefusalRetry(factory, { messages: [sys("s")] }, { audit: (event, data) => rows.push({ event, ...data }) }),
+  );
+  assert.equal(rows.at(-1).outcome, "refused_again");
+  assert.equal(chunks.filter((c) => c.type === "text-delta")[0].text, "I'm sorry, but I must decline.");
+});
+
+test("a retry that only returns a tool call is logged as empty", async () => {
+  const rows = [];
+  let calls = 0;
+  const factory = () => {
+    calls += 1;
+    return (async function* () {
+      if (calls === 1) {
+        yield delta("I can't help with that.");
+        yield finish();
+        return;
+      }
+      yield { type: "tool-call-delta", index: 0, name: "read" };
+      yield finish();
+    })();
+  };
+  await collect(
+    streamWithRefusalRetry(factory, { messages: [sys("s")] }, { audit: (event, data) => rows.push({ event, ...data }) }),
+  );
+  assert.equal(rows.at(-1).outcome, "empty");
+});
+
+test("a retry stream that throws is logged as error and the error still propagates", async () => {
+  const rows = [];
+  const factory = scripted([{ texts: ["I can't help with that."] }, { error: "boom", code: "ECONNRESET" }]);
+  await assert.rejects(
+    collect(streamWithRefusalRetry(factory, { messages: [sys("s")] }, { audit: (event, data) => rows.push({ event, ...data }) })),
+    /boom/,
+  );
+  assert.equal(rows.at(-1).outcome, "error");
+  assert.equal(rows.at(-1).error, "ECONNRESET");
+});
