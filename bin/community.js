@@ -118,16 +118,27 @@ if (LEGACY[op]) {
     const sub = (argument || "status").toLowerCase();
     if (sub === "on" || sub === "off") {
       const next = writeTuning({ refusalRetry: sub === "on" });
-      logAudit("refusal_retry_setting", { enabled: next.refusalRetry }, home);
-      result = { ok: true, refusalRetry: next.refusalRetry, restart_required: true };
+      // 钩子每轮都重读 tuning.json，所以下一轮对话就生效，不需要重启。
+      result = { ok: true, refusalRetry: next.refusalRetry, restart_required: false, effective: "next-turn" };
     } else {
       result = { ok: true, refusalRetry: readTuning(home).refusalRetry === true, hint: "purge-community retry on|off" };
+    }
+  } else if (op === "inject") {
+    const sub = (argument || "status").toLowerCase();
+    if (sub === "head" || sub === "tail" || sub === "both") {
+      const next = writeTuning({ injectPosition: sub });
+      // 段位在插件加载时注册，改完要重载插件（重启 DSH）才生效。
+      result = { ok: true, injectPosition: next.injectPosition, restart_required: true, effective: "next-load" };
+    } else if (sub === "status") {
+      const current = readTuning(home).injectPosition;
+      result = { ok: true, injectPosition: current, hint: "purge-community inject head|tail|both" };
+    } else {
+      throw Error("用法：purge-community inject [head|tail|both]");
     }
   } else if (op === "rewind") {
     const sub = (argument || "status").toLowerCase();
     if (sub === "on" || sub === "off") {
       const next = writeTuning({ rewind: sub === "on" });
-      logAudit("rewind", { enabled: next.rewind }, home);
       result = { ok: true, rewind: next.rewind, restart_required: true };
     } else {
       result = { ok: true, rewind: readTuning(home).rewind !== false, hint: "purge-community rewind on|off" };
@@ -224,7 +235,7 @@ if (LEGACY[op]) {
     });
   } else
     throw Error(
-      "用法：purge-community status | host-status | diagnose | selfcheck [--json] | boost on|off | rewind on|off | probe [new] | audit [--limit n] | preset [status|install] | backup [prune|usage] | rollback <备份ID> | migrate <tgz> | apply | revert | uninstall | edit",
+      "用法：purge-community status | host-status | diagnose | selfcheck [--json] | boost on|off | retry on|off | inject head|tail|both | rewind on|off | probe [new] | audit [--limit n] | preset [status|install] | backup [prune|usage] | rollback <备份ID> | migrate <tgz> | apply | revert | uninstall | edit",
     );
   console.log(JSON.stringify(result, null, 2));
 } catch (e) {

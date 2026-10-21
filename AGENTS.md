@@ -55,8 +55,11 @@ selfcheck 全绿 = 可以开工
 | `purge-community diagnose [--json]` | 锚点漂移诊断（含行号 + 片段） | 0 |
 | `purge-community reanchor list\|show\|apply <id> [--index n] [--lines a-b] [--yes]\|clear <id>` | 半自动重锚：把新锚点钉成本地覆盖 | 0 |
 | `purge-community probe [new]` | 生成/查看运行时探针 | 0 |
-| `purge-community audit [--limit n]` | 最近动作记录（apply/revert/boost/probe/preset/reanchor） | 0 |
+| `purge-community audit [--limit n]` | 最近动作记录（apply/revert/tuning_setting/probe/preset/reanchor） | 0 |
 | `purge-community boost [on\|off]` | 尾部强化段开关 | 0 |
+| `purge-community retry [on\|off]` | 拒绝检测 + 单次重试（默认 off，见 §31；下一轮生效，无需重启） | 0 |
+| `purge-community inject [head\|tail\|both]` | 注入段位（改完要重载插件才生效） | 0 |
+| `purge-community rewind [on\|off]` | 输入框右侧「回退」按钮 | 0 |
 | `purge-community preset [status\|install [--force]]` | `unrestricted` 预设落盘 | 0 |
 | `purge-community usage` / `prune` | 备份占用 / 清理+GC | 0 |
 | `purge-community backup` / `rollback <id>` | 快照 / 回滚插件 | 0 |
@@ -96,10 +99,10 @@ purge-community probe new
 
 | 路径 | 内容 |
 | --- | --- |
-| `$DSH_HOME/dsh-purge/tuning.json` | `{boost, injectPosition, askNoBlock}` |
+| `$DSH_HOME/dsh-purge/tuning.json` | `{boost, injectPosition, askNoBlock, rewind, refusalRetry}` |
 | `$DSH_HOME/dsh-purge/probe.json` | 探针 nonce（30 分钟 TTL） |
 | `$DSH_HOME/dsh-purge/anchor-overrides.json` | 本地重锚覆盖（不改插件源码；删掉即恢复出厂锚点） |
-| `$DSH_HOME/dsh-purge-community/audit.jsonl` | 动作审计（1MB 轮转，保留 2 份）；面板「维护 → 最近动作」 |
+| `$DSH_HOME/dsh-purge-community/audit.jsonl` | 动作审计（1MB 轮转，保留 2 份）；面板「维护 → 最近动作」。开关变更统一是 `tuning_setting`（`key/from/to`），不另写专用事件 |
 | `$DSH_HOME/dsh-purge/applied.json` · `installed-rev` | 上次应用的插件版本 |
 | `$DSH_HOME/dsh-purge-community/backups/<id>/` | 快照（`manifest.json` + 小文件；大文件在 `objects/`） |
 | `$DSH_HOME/.agent-presets/unrestricted/` | 无限制模式预设（首行 `# managed-by: dsh-purge` 时会被新版覆盖） |
@@ -287,7 +290,7 @@ status/selfcheck/diagnose 使用 `diagnosticHost` 统一检查当前安装的物
 3. 未命中 → 缓冲块原样吐出，之后流式透传，与未装钩子一致；
 4. 每次重试写 `audit.jsonl` 的 `refusal_retry`（只记长度与前 80 字符）。
 
-只重试一次，避免死循环。排查拒绝率先看 `purge-community audit --limit 20` 有没有 `refusal_retry`，再决定是否调整 `tuning.injectPosition`。本层与 §20 的插话、§19 的换包互不影响。
+只重试一次，避免死循环。钩子每轮都重读 `tuning.json`，所以 `retry` / `rewind` 返回 `restart_required: false` + `effective: next-turn`，不要让用户白重启一次；段位 `inject` 是加载期注册，返回 `effective: next-load`。排查拒绝率先看 `purge-community audit --limit 20` 有没有 `refusal_retry`，再决定是否调整 `tuning.injectPosition`。本层与 §20 的插话、§19 的换包互不影响。
 
 ## 1.6.38：慢网更新与审计属主
 
