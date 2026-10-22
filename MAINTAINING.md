@@ -258,6 +258,27 @@ cd ..\..
 1. 给 Release 挂上 `dsh-purge-community-<version>.tgz` 和 `SHA256SUMS.txt`（`lib/update-integrity.js` 用它校验）；
 2. 面板维护页保持**自动检查开、自动安装关**。
 
+### 现状：仓库是私有的，安装/自更新还没有打通
+
+实测（2026-10-22）：`Mrl0000/dsh-purge` 目前是**私有**仓库。匿名访问 `raw.githubusercontent.com` / `codeload.github.com` / `releases/latest/download` 全是 404，所以：
+
+- `scripts/install.ps1`、`install.sh` 里的一键安装入口 404；
+- 面板「检查更新」→ 下载 zip 404；
+- `package.json` 的 `dsh.install.tarball` 404。
+
+**给私有仓库配 `GITHUB_TOKEN` 也救不回来**：`lib/update-http.js:56-57` 只对 `api.github.com` 加 `Bearer` 头，`codeload.github.com` 和 `raw.githubusercontent.com` 的请求不带 token，私有仓库照样 404。
+
+两条路，二选一：
+
+| 路线 | 要做的事 | 结果 |
+| --- | --- | --- |
+| A. 转公开（推荐） | Settings → General → Danger zone → Change visibility → Public；再建 Release `v1.6.43`，挂上 `dsh-purge-community-1.6.43.tgz` + `SHA256SUMS.txt` | 一键安装、自更新、市场索引四个入口全通 |
+| B. 保持私有 | 什么都不用建；面板里关掉「自动检查」，只用本地 git 维护 | 只能源码级维护：`git pull` → `npm install` → `npm run build:client` → 需要时本地 `purge-community apply` |
+
+没有 `gh` CLI 时建 Release：网页 Releases → Draft a new release → tag `v1.6.43` → 上传 tgz 与 SHA256SUMS.txt；或走 REST `POST /repos/Mrl0000/dsh-purge/releases`。
+
+**分支现状（别乱动）**：`master` = `15d3f37`（新代码，也是默认分支）；旧 lineage `033e6bd`（v1.1.71）保存为 `legacy-master` 分支；`community-1.6.43` 与 `master` 同点。`lib/update-net.js:12` 与 `lib/update-state.js:7` 里 `STABLE_REF = "master"`，源码 ZIP 走 `refs/heads/master`——所以 `master` 这个名字不能改、不能删。
+
 > 一个事实：`lib/update-integrity.js` 从 GitHub 拉源码 ZIP 时会按 commit SHA + 每个文件的 Git blob 摘要校验，所以任何时候都别手工改 Release 附件或跳过校验。
 ---
 
