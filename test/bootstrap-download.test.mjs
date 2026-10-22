@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { bootstrapInstall, downloadReleaseFile, archiveDownloadBudget } from '../scripts/bootstrap-install.mjs';
-const url = 'https://github.com/kingcharleslzy-ai/dsh-purge/releases/download/v1.6.38/dsh-purge-community-1.6.38.tgz';
+const url = 'https://github.com/Mrl0000/dsh-purge/releases/download/v1.6.38/dsh-purge-community-1.6.38.tgz';
 const network = code => new TypeError('fetch failed with https://user:secret@proxy.invalid/?token=private', {cause:Object.assign(Error('private details'), {code})});
 const options = { sleep: async()=>{}, log:()=>{}, curlRequest:async()=>assert.fail('unexpected curl') };
 

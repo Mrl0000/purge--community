@@ -5,14 +5,14 @@ import { SOURCE_REPO, UPSTREAM_REPO, archiveZipUrl, archiveTarballUrl } from "..
 import { REPOSITORY } from "../lib/community.js";
 
 test("update sources point at this repository", () => {
-  assert.equal(SOURCE_REPO, "kingcharleslzy-ai/dsh-purge");
+  assert.equal(SOURCE_REPO, "Mrl0000/dsh-purge");
   assert.equal(UPSTREAM_REPO, SOURCE_REPO);
   assert.equal(REPOSITORY, SOURCE_REPO);
 });
 
 test("archive URLs never reference the removed upstream", () => {
   for (const url of [archiveZipUrl("v1.6.36"), archiveTarballUrl("v1.6.36")]) {
-    assert.match(url, /kingcharleslzy-ai\/dsh-purge/);
+    assert.match(url, /Mrl0000\/dsh-purge/);
     assert.doesNotMatch(url, /YuJunZhiXue/);
   }
 });

@@ -80,7 +80,7 @@ test("Linux Desktop CLI discovery keeps the explicitly selected install", t => {
 test("offline Linux bootstrap verifies SHA256, runs migration with web profile and keeps settings", { skip: process.platform !== "linux" }, async t => {
   const f = fixture(t), pack = path.join(f.tmp, "package"), version = "1.6.28";
   fs.mkdirSync(path.join(pack, "bin"), { recursive: true });
-  fs.writeFileSync(path.join(pack, "package.json"), JSON.stringify({ name: "dsh-purge-community", version, repository: { url: "git+https://github.com/kingcharleslzy-ai/dsh-purge.git" } }));
+  fs.writeFileSync(path.join(pack, "package.json"), JSON.stringify({ name: "dsh-purge-community", version, repository: { url: "git+https://github.com/Mrl0000/dsh-purge.git" } }));
   fs.writeFileSync(path.join(pack, "bin/community.js"), `require('node:fs').writeFileSync(process.env.DSH_HOME+'/called.json', JSON.stringify({args:process.argv.slice(2),profile:process.env.DSH_PROFILE,surface:process.env.DSH_SURFACE,cli:process.env.PURGE_DSH_CLI}));`);
   const archiveFile = path.join(f.tmp, `dsh-purge-community-${version}.tgz`);
   await exec("tar", ["-czf", archiveFile, "-C", f.tmp, "package"]);
@@ -160,7 +160,7 @@ test('Linux migration failure preserves first-install and existing host launcher
  const writable=()=>{fs.chmodSync(official,0o755);fs.chmodSync(base,0o755);};
  try {
   const pack=path.join(f.tmp,'package');fs.mkdirSync(path.join(pack,'bin'),{recursive:true});
-  fs.writeFileSync(path.join(pack,'package.json'),JSON.stringify({name:'dsh-purge-community',version:'1.6.32',repository:{url:'git+https://github.com/kingcharleslzy-ai/dsh-purge.git'}}));
+  fs.writeFileSync(path.join(pack,'package.json'),JSON.stringify({name:'dsh-purge-community',version:'1.6.32',repository:{url:'git+https://github.com/Mrl0000/dsh-purge.git'}}));
   const archiveFile=path.join(f.tmp,'dsh-purge-community-1.6.32.tgz');
   const makeArchive=async source=>{
    fs.writeFileSync(path.join(pack,'bin/community.js'),source);

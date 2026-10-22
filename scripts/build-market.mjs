@@ -3,7 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { execFileSync } from "node:child_process";
 import { pathToFileURL } from "node:url";
-const repo = "kingcharleslzy-ai/dsh-purge";
+const repo = "Mrl0000/dsh-purge";
 export function buildMarket(releases, git = (args) => execFileSync("git", args, { encoding: "utf8" }).trim()) {
   const versions = releases.filter((r) => !r.draft && !r.prerelease && /^v1\.(?:[7-9]|[1-9]\d)\.\d+$|^v1\.6\.(?:[5-9]|[1-9]\d)$|^v[2-9]\d*\.\d+\.\d+$/.test(r.tag_name))
     .map((r) => {
@@ -20,10 +20,10 @@ export function buildMarket(releases, git = (args) => execFileSync("git", args, 
     }).filter(Boolean).sort((a,b) => b.publishTimestamp-a.publishTimestamp);
   if (!versions.length) throw Error("No published market-qualified release (>=1.6.5)");
   return { format: 1, title: { en: "Purge Community", zh: "Purge 社区插件源" },
-    description: { en: "Verified releases maintained by kingcharleslzy-ai.", zh: "kingcharleslzy-ai 维护的正式发行版本。" },
+    description: { en: "Verified releases maintained by Mrl0000.", zh: "Mrl0000 维护的正式发行版本。" },
     plugins: [{ name: "dsh-purge-community", title: { en: "Purge Community", zh: "Purge 社区版" },
       description: { en: "Host-policy patches, prompt/rule management, diagnostics, verified updates, and local backup/rollback.", zh: "宿主策略补丁、提示词与规则管理、诊断、校验更新和本机备份回滚。" },
-      author: "kingcharleslzy-ai; original dsh-purge by YuJunZhiXue",
+      author: "Mrl0000 (community fork of kingcharleslzy-ai); original dsh-purge by YuJunZhiXue",
       homepage: `https://github.com/${repo}#readme`, repository: { url: `https://github.com/${repo}` },
       icon: "data:image/svg+xml;base64," + Buffer.from('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#166534"/><text x="32" y="45" text-anchor="middle" fill="white" font-size="44" font-family="sans-serif">P</text></svg>').toString("base64"),
       versions }] };
@@ -55,6 +55,6 @@ if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.ar
   index.plugins.push(plugin);
   fs.mkdirSync(out, { recursive: true });
   fs.writeFileSync(path.join(out, "index.json"), JSON.stringify(index, null, 2) + "\n");
-  fs.writeFileSync(path.join(out, "index.html"), '<!doctype html><html lang="zh"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>Charles DSH 插件源</title><main><h1>Charles DSH 插件源</h1><p>DSH → 插件 → 实验性插件 → 自定义插件市场 → 发现 → 添加索引源。</p><p>索引：<a href="index.json">index.json</a>，复制此链接的完整地址添加。</p><p>包含 Purge Community 与图像 Qwen Studio。<a href="https://github.com/kingcharleslzy-ai/dsh-qwen-studio">图像插件安装与 Agent 指南</a>。</p><p>宿主策略补丁、提示词管理、诊断、更新与备份回滚。安装会修改本机插件；应用宿主补丁是单独的操作。插件升级后手动重启 DSH。</p><p><a href="https://github.com/kingcharleslzy-ai/dsh-purge">源码与安装说明</a> · <a href="https://github.com/kingcharleslzy-ai/dsh-purge/releases/latest">最新发行包</a></p></main></html>\n');
+  fs.writeFileSync(path.join(out, "index.html"), '<!doctype html><html lang="zh"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>Charles DSH 插件源</title><main><h1>Charles DSH 插件源</h1><p>DSH → 插件 → 实验性插件 → 自定义插件市场 → 发现 → 添加索引源。</p><p>索引：<a href="index.json">index.json</a>，复制此链接的完整地址添加。</p><p>包含 Purge Community 与图像 Qwen Studio。<a href="https://github.com/kingcharleslzy-ai/dsh-qwen-studio">图像插件安装与 Agent 指南</a>。</p><p>宿主策略补丁、提示词管理、诊断、更新与备份回滚。安装会修改本机插件；应用宿主补丁是单独的操作。插件升级后手动重启 DSH。</p><p><a href="https://github.com/Mrl0000/dsh-purge">源码与安装说明</a> · <a href="https://github.com/Mrl0000/dsh-purge/releases/latest">最新发行包</a></p></main></html>\n');
   console.log(`Generated ${index.plugins[0].versions.length} pinned market versions`);
 }

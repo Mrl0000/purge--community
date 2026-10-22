@@ -12,6 +12,9 @@ const temp = () => fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'purge 
 const powershell=process.env.PURGE_TEST_POWERSHELL || 'powershell.exe';
 const wait = ms => new Promise(r => setTimeout(r, ms));
 async function until(fn, ms=12000) { const end=Date.now()+ms; while(Date.now()<end) { if(fn())return; await wait(100); } throw Error('handoff timeout'); }
+// 进程刚被杀掉时 Windows 仍可能短暂持有 exe/目录句柄，rmSync 直接删会 EPERM（全量并行跑时偶发）。
+// 清理失败不是被测行为的一部分，重试到进程真正释放为止。
+async function rmrf(dir) { for (let i=0;i<50;i++) { try { fs.rmSync(dir,{recursive:true,force:true}); return; } catch { await wait(100); } } fs.rmSync(dir,{recursive:true,force:true}); }
 function fixture() { const root=temp(); fs.mkdirSync(path.join(root,'app'));fs.writeFileSync(path.join(root,'app/package.json'),'{}');const asar=path.join(root,'app.asar');fs.writeFileSync(asar,'original archive');return {root,asar}; }
 
 test('Windows handoff requests manual quit without exit, kill, or relaunch', () => {
@@ -54,7 +57,7 @@ test('real Windows PowerShell: wait for process, preserve archive, complete with
     assert.ok(fs.existsSync(f.asar));assert.equal(holder.exitCode,null);
     holder.kill();await until(()=>readWindowsAsarHandoff(f.asar)?.phase==='complete');
     assert.equal(fs.existsSync(f.asar),false);assert.equal(fs.readFileSync(f.asar+'.purge-test.bak','utf8'),'original archive');assert.equal(stderr,'');
-  }finally {holder.kill();helper?.kill();await wait(200);fs.rmSync(f.root,{recursive:true,force:true});}
+  }finally {holder.kill();helper?.kill();await wait(200);await rmrf(f.root);}
 });
 
 test('real Windows PowerShell: missing unpacked app fails visibly, leaves original',{skip:process.platform!=='win32'},()=>{

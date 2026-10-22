@@ -1,6 +1,6 @@
 # DSH 自定义市场索引
 
-正式源地址：**https://kingcharleslzy-ai.github.io/dsh-purge/index.json**
+正式源地址：**https://mrl0000.github.io/dsh-purge/index.json**
 
 DSH「插件 → 实验性插件 → 更多 → 自定义插件市场」开启后，在「发现 → 添加索引源」粘贴该地址。没有这个功能的旧宿主仍可通过 GitHub Release 安装。
 

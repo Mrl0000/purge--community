@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { installWithRegistryRecovery, missingPublicVersion, OFFICIAL_REGISTRY } from '../lib/install-registry.js';
-const missingLog = `ERR_PNPM_MINIMUM_RELEASE_AGE_VIOLATION\n1 lockfile entries failed verification:\n  @dsh-ops/bash-win32-x64@0.2.1 could not be checked against minimumReleaseAge (version not present in registry manifest)\n[WARN] HEAD https://github.com/kingcharleslzy-ai/dsh-purge error (UND_ERR_DESTROYED). Will retry`;
+const missingLog = `ERR_PNPM_MINIMUM_RELEASE_AGE_VIOLATION\n1 lockfile entries failed verification:\n  @dsh-ops/bash-win32-x64@0.2.1 could not be checked against minimumReleaseAge (version not present in registry manifest)\n[WARN] HEAD https://github.com/Mrl0000/dsh-purge error (UND_ERR_DESTROYED). Will retry`;
 const failure = () => Object.assign(Error('original install failure'), {stderr:missingLog});
 const metadata = () => ({name:'@dsh-ops/bash-win32-x64',time:{'0.2.1':'2026-10-08T11:00:18Z'},versions:{'0.2.1':{name:'@dsh-ops/bash-win32-x64',version:'0.2.1',dist:{integrity:'sha512-YWJjZA==',tarball:OFFICIAL_REGISTRY+'@dsh-ops/bash-win32-x64/-/bash-win32-x64-0.2.1.tgz'}}}});
 const official = async () => new Response(JSON.stringify(metadata()));

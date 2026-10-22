@@ -6,8 +6,8 @@
 
 给 DeepSeek Harness 的自托管控件（俗称「破甲」插件）· 80 条宿主补丁 · 25 层状态自检 · 左侧栏整页设置
 
-[![Release](https://img.shields.io/github/v/release/kingcharleslzy-ai/dsh-purge?label=release)](https://github.com/kingcharleslzy-ai/dsh-purge/releases)
-[![Checks](https://github.com/kingcharleslzy-ai/dsh-purge/actions/workflows/community.yml/badge.svg)](https://github.com/kingcharleslzy-ai/dsh-purge/actions/workflows/community.yml)
+[![Release](https://img.shields.io/github/v/release/Mrl0000/dsh-purge?label=release)](https://github.com/Mrl0000/dsh-purge/releases)
+[![Checks](https://github.com/Mrl0000/dsh-purge/actions/workflows/community.yml/badge.svg)](https://github.com/Mrl0000/dsh-purge/actions/workflows/community.yml)
 
 当前版本 **1.6.43** · 适配 **DSH Desktop 0.2.1-rc.2**（rc.1 同样通过） · [English](docs/README.en.md)
 
@@ -77,7 +77,7 @@ Purge Community 是一个跑在你自己机器上的 Harness 附加组件。它�
 ### macOS
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/kingcharleslzy-ai/dsh-purge/master/scripts/install.sh -o /tmp/purge-install.sh
+curl -fsSL https://raw.githubusercontent.com/Mrl0000/dsh-purge/master/scripts/install.sh -o /tmp/purge-install.sh
 sh /tmp/purge-install.sh --dry-run     # 先校验来源与 SHA256
 sh /tmp/purge-install.sh               # 确认无误再执行
 ```
@@ -96,7 +96,7 @@ sh scripts/install.sh
 ### Windows 11 · PowerShell
 
 ```powershell
-irm https://raw.githubusercontent.com/kingcharleslzy-ai/dsh-purge/master/scripts/install.ps1 -OutFile $env:TEMP\purge-install.ps1
+irm https://raw.githubusercontent.com/Mrl0000/dsh-purge/master/scripts/install.ps1 -OutFile $env:TEMP\purge-install.ps1
 powershell -ExecutionPolicy Bypass -File $env:TEMP\purge-install.ps1 -DryRun
 powershell -ExecutionPolicy Bypass -File $env:TEMP\purge-install.ps1
 ```
